@@ -15,6 +15,7 @@
 	value:2000
 }
 */
+//PixelShopPlus.newCoin(newCoinFormat)
 
 //newShopFormat = PixelShopPlus.newShop('fish','testCoin')
 
@@ -29,6 +30,7 @@
 	bought:false,
 	callback: function(){IdlePixelPlus.plugins.test.bought(pirate)}
 }]*/
+//PixelShopPlus.newItems('fish',newItemFormat)
 
 (function PixelShopPlus() {
     'use strict';
@@ -114,7 +116,8 @@
 		
 		//Increase the value of a coin
 		coinIncrease: function(coin,increase) {
-			PixelShopPlus.coins[coin].value += increase
+			PixelShopPlus.coins[coin].value += increase;
+			PixelShopPlus.saveCoins();
 			if (document.querySelector('[coin-value="' + coin + '"]')) {
 				let coinElements = document.querySelectorAll('[coin-value="' + coin + '"]');
 				coinElements.forEach(function(coinElement) {
@@ -125,7 +128,8 @@
 		
 		//Decrease the value of a coin
 		coinDecrease: function(coin,decrease) {
-			PixelShopPlus.coins[coin].value -= decrease
+			PixelShopPlus.coins[coin].value -= decrease;
+			PixelShopPlus.saveCoins();
 			if (document.querySelector('[coin-value="' + coin + '"]')) {
 				let coinElements = document.querySelectorAll('[coin-value="' + coin + '"]');
 				coinElements.forEach(function(coinElement) {
@@ -136,7 +140,8 @@
 		
 		//Set the value of a coin
 		coinSet: function(coin,setValue) {
-			PixelShopPlus.coins[coin].value = setValue
+			PixelShopPlus.coins[coin].value = setValue;
+			PixelShopPlus.saveCoins();
 			if (document.querySelector('[coin-value="' + coin + '"]')) {
 				let coinElements = document.querySelectorAll('[coin-value="' + coin + '"]');
 				coinElements.forEach(function(coinElement) {
@@ -243,6 +248,8 @@
 			}
 		},
 	};
-	window.PixelShopPlus = PixelShopPlus;
-	PixelShopPlus.initialize();
+	if (typeof PixelShopPlus !== 'object') {
+		window.PixelShopPlus = PixelShopPlus;
+		PixelShopPlus.initialize();
+	}
 })();
