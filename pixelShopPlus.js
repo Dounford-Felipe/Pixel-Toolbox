@@ -200,6 +200,13 @@ if (!document.getElementById('shopButtons')) {
 			})
 		},
 		
+		//In case you want to remove an Item
+		removeItem: function(shop,item) {
+			delete PixelShopPlus.items[shop][item];
+			console.log(item + ' from ' + shop + ' Shop was removed');
+			PixelShopPlus.saveCoins();
+		}
+		
 		//Open Buy Confirm
 		openBuyModal: function(shop,item) {
 			if (PixelShopPlus.items[shop][item].bought == false) {
@@ -235,13 +242,13 @@ if (!document.getElementById('shopButtons')) {
 		
 		//Save the coin amount on localstorage
 		saveCoins: function() {
-			let key = `ShopPlus-${var_username}`;
+			let key = `ShopPlusCoins-${var_username}`;
 			localStorage.setItem(key, JSON.stringify(PixelShopPlus.coins));
 		},
 		
 		//Load the coin amount on localstorage
 		loadCoins: function() {
-			let key = `ShopPlus-${var_username}`;
+			let key = `ShopPlusCoins-${var_username}`;
 			let loadedCoins = localStorage.getItem(key);
 			if (loadedCoins) {
 				PixelShopPlus.coins = JSON.parse(loadedCoins);
