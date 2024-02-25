@@ -32,6 +32,7 @@
 }]*/
 //PixelShopPlus.newItems('fish',newItemFormat)
 
+if (!document.getElementById('shopButtons')) {
 (function PixelShopPlus() {
     'use strict';
 	const PixelShopPlus = {
@@ -39,11 +40,8 @@
 		coins: {},
 		items: {},
 		initialize: function () {
-            window.addEventListener('load', function () {
-                PixelShopPlus.newModals();
-                PixelShopPlus.newShopDivs();
-                //PixelShopPlus.loadCoins();
-            });
+			PixelShopPlus.newModals();
+			PixelShopPlus.newShopDivs();
         },
 		
 		//Creates 
@@ -204,12 +202,14 @@
 		
 		//Open Buy Confirm
 		openBuyModal: function(shop,item) {
-			document.getElementById('customShopModalShop').value = shop;
-			document.getElementById('customShopModalItem').value = item;
-			document.getElementById('customShopModalImage').src = PixelShopPlus.items[shop][item].imageUrl;
-			document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].buyText;
-			document.getElementById('customShopModalBuy').style.display='';
-			document.getElementById('customShopModalParent').style.display='';
+			if (PixelShopPlus.items[shop][item].bought == false) {
+				document.getElementById('customShopModalShop').value = shop;
+				document.getElementById('customShopModalItem').value = item;
+				document.getElementById('customShopModalImage').src = PixelShopPlus.items[shop][item].imageUrl;
+				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].buyText;
+				document.getElementById('customShopModalBuy').style.display='';
+				document.getElementById('customShopModalParent').style.display='';
+			}
 		},
 		
 		//Buy Item
@@ -248,8 +248,7 @@
 			}
 		},
 	};
-	if (typeof PixelShopPlus !== 'object') {
-		window.PixelShopPlus = PixelShopPlus;
-		PixelShopPlus.initialize();
-	}
-})();
+	window.PixelShopPlus = PixelShopPlus;
+	PixelShopPlus.initialize();
+})()
+}
