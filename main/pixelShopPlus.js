@@ -185,7 +185,7 @@ if (!document.getElementById('shopButtons')) {
 			items.forEach(function(item) {
 				PixelShopPlus.items[shop][item.name] = item;
 				if (item.bought == false) {
-					let newShopItem = `<div id="shop-${item.name}" onclick="PixelShopPlus.openBuyModal('${shop}','${item.name}')" class="game-shop-box hover shadow" data-tooltip="shop-${item.name}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true" title="" data-bs-original-title="${item.tooltipText}">
+					let newShopItem = `<div id="shop-${item.name}" onclick="PixelShopPlus.openBuyModal('${shop}','${item.name}')" class="game-shop-box hover shadow" data-tooltip="shop-${item.name}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true" title="" data-bs-original-title="${item.tooltipText}" style="margin-right: 5px;">
 						<div class="center mt-1">
 							<img src="${item.imageUrl}" title="${item.name}" style="height: 50px;">
 						</div>
@@ -202,6 +202,8 @@ if (!document.getElementById('shopButtons')) {
 		
 		//In case you want to remove an Item
 		removeItem: function(shop,item) {
+			let removedItem = document.getElementById('shop-' + item);
+			removedItem.parentNode.removeChild(removedItem);
 			delete PixelShopPlus.items[shop][item];
 			console.log(item + ' from ' + shop + ' Shop was removed');
 			PixelShopPlus.saveCoins();
@@ -231,7 +233,7 @@ if (!document.getElementById('shopButtons')) {
 				document.getElementById('shop-' + item).style.display = "none";
 				document.getElementById('customShopModalBuy').style.display="none";
 				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].boughtText;
-				if(PixelShopPlus.items[shop][item].callback !== "") {
+				if(typeof PixelShopPlus.items[shop][item].callback == "function") {
 					PixelShopPlus.items[shop][item].callback()
 				}
 			} else {

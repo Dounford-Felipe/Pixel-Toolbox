@@ -1,0 +1,62 @@
+/* Fonts*/
+@font-face {
+    font-family: 'EBGaramond';
+    src: url('../Fonts/EBGaramond-VariableFont_wght.ttf') format('truetype');
+ }
+
+/* Body Element*/
+body {
+	background: #E0E0E0;
+	margin: 0;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.container {
+	width: 80%;
+	margin-left: 10%;
+}
+
+p {
+	font-size:18px;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+/* No more purple links*/
+a:visited {
+  color: blue;
+}
+
+/* Add a black background color to the top navigation */
+.topnav {
+	background-color: #282A35;
+	overflow: hidden;
+	position: sticky;
+	top: 0;
+	margin-top: 0;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+	float: left;
+	color: #f2f2f2;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	font-size: 18px;
+	font-weight: 700;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+	background-color: #ddd;
+	color: black;
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+	background-color: #04AA6D;
+	color: white;
+}
