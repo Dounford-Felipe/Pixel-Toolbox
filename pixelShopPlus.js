@@ -205,7 +205,7 @@ if (!document.getElementById('shopButtons')) {
 			delete PixelShopPlus.items[shop][item];
 			console.log(item + ' from ' + shop + ' Shop was removed');
 			PixelShopPlus.saveCoins();
-		}
+		},
 		
 		//Open Buy Confirm
 		openBuyModal: function(shop,item) {
