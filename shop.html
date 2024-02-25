@@ -17,10 +17,10 @@
 	<a href="combat.html">Pixel Combat</a>
 </ul>
 <div class="container">
-<h3>Including Pixel Shop+</h3>
+<h2>Including Pixel Shop+</h2>
 <p>First, you need to grab the require link for the latest version of the script. Head over to Greasy Fork <a href="https://greasyfork.org/pt-BR/scripts/488260-pixelshop">https://greasyfork.org/pt-BR/scripts/488260-pixelshop</a> and copy the bit that starts with // @require, but remove the ?version=whatever bit at the end. This needs to be added to your script's metadata (on top of the script). If you wish to target a specific version however, you can leave the ?version in - but this is not recommended as it can lead to multiple versions of the library being included and conflicting with each other.</p>
 
-<h3>Loading Currency</h3>
+<h2>Loading Currency</h2>
 <p><b>This should be done before creating new coins, shops or items</b></p>
 <p>Unless you don't need the currency to be saved between sessions you should load the currency amount after the player login</p>
 <pre><code class="language-javascript">//If you are using IdlePixel+ you can do something as follow:
@@ -31,7 +31,7 @@ onLogin() {
 //Do note that to loadCoins work the var_username needs to exist already, so you need to be careful when you will call it if you are not using IPP
 </code></pre>
 
-<h3>Creating new Currency</h3>
+<h2>Creating new Currency</h2>
 <pre><code class="language-javascript">//You should start registering your coins, there are no limits as for how many different coins you will use, the format is as follow:
 
 let newCoin = {
@@ -46,7 +46,7 @@ PixelShopPlus.newCoin(newCoin);
 PixelShopPlus.newCoin({name:'testCoin',image:'https://raw.githubusercontent.com/Dounford-Felipe/DHP-Pets/main/images/goldenHeart.gif',value:2000});
 </code></pre>
 
-<h3>Creating new Shops</h3>
+<h2>Creating new Shops</h2>
 <p>When creating new shops a new tab will appear on the game shop panel, if declared it will show the current value of the main Currency used on the shop.</p>
 <p>Do note that even if all shops have a main currency you can create items that use a currency other than the main.</p>
 <pre><code class="language-javascript">//You can add as many shops as you want, the format is as follow:
@@ -58,7 +58,7 @@ PixelShopPlus.newShop(shopName,shopMainCoin);
 PixelShopPlus.newShop('testShop','testCoin');
 </code></pre>
 
-<h3>Registering new Buyable Items</h3>
+<h2>Registering new Buyable Items</h2>
 <p>When creating new items they will appear on the corresponding shop tab.</p>
 <p>Do note that even if all shops have a main currency you can create items that use a currency other than the main.</p>
 <pre><code class="language-javascript">//You can add as many items to each shop as you want, the format is as follow:
@@ -78,7 +78,7 @@ let itemObject1 = {
 PixelShopPlus.newItems('testShop',[itemObject1,itemObject2,itemObject100])
 </code></pre>
 
-<h3>Removing Buyable Items</h3>
+<h2>Removing Buyable Items</h2>
 <p>If for some reason you need to remove a buyable item you can use this:</p>
 <pre><code class="language-javascript">//Any item can be removed
 PixelShopPlus.removeItem(shopName,itemName);
@@ -88,7 +88,7 @@ PixelShopPlus.removeItem(shopName,itemName);
 PixelShopPlus.removeItem('testShop','blueCat2');
 </code></pre>
 
-<h3>Changing Currency Amount</h3>
+<h2>Changing Currency Amount</h2>
 <p>The amount can be changed in 3 different ways: it can increase, decrease or be set to a specific amount.</p>
 <p>All changes will <b>1 -</b> Trigger the PixelShopPlus.saveCoins that will save the current amount on localstorage.</p>
 <p><b>2 -</b> Update all elements with the attribute coin-value=coinName with the new coin value.</p>
