@@ -19,6 +19,8 @@ let defaultEnemy = {
 	damage:2,
 	speed:3,
 	defence:5,
+	multiphase: false,
+	nextPhase:'',
 	arrowImunity:false,
 	magicImunity:false,
 	needsLight:false,
@@ -27,6 +29,7 @@ let defaultEnemy = {
 	poisoned: false,
 	ghost: false,
 	fish: false,
+	defender: false,
 	lootTable:"",
 	lootFunction: "",
 	winFunction: "",
@@ -66,7 +69,7 @@ if (!document.getElementById('panel-customCombat')) {
 		fight: false,
 		//Hitsplat Maps
 		hitSplatHero: {},
-		hitSplatMonster: {},
+		hitSplatEnemy: {},
 		//Timer until fight starts
 		startsIn:0,
 		//Interval called each second
@@ -82,6 +85,8 @@ if (!document.getElementById('panel-customCombat')) {
 			damage:2,
 			speed:3,
 			defence:5,
+			multiphase: false,
+			nextPhase:'',
 			arrowImunity:false,
 			magicImunity:false,
 			needsLight:false,
@@ -90,6 +95,7 @@ if (!document.getElementById('panel-customCombat')) {
 			poisoned: false,
 			ghost: false,
 			fish: false,
+			defender: false,
 			lootTable: "",
 			lootFunction: "",
 			winFunction: "",
@@ -108,6 +114,7 @@ if (!document.getElementById('panel-customCombat')) {
 		invisibilityCooldown: 0,
 		heroIsInvisible: 0,
 		enemyIsInvisible: 0,
+		enemyIsCharging: 0,
 		
 		testFight: function() {
 			PixelCombatPlus.startFight(defaultEnemy)
@@ -300,7 +307,7 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.heroContext = document.getElementById("custom-combat-canvas-hero").getContext("2d");
 			PixelCombatPlus.enemyCanvas = document.getElementById("custom-combat-canvas-monster");
 			PixelCombatPlus.enemyContext = document.getElementById("custom-combat-canvas-monster").getContext("2d");
-			PixelCombatPlus.enemyImage = new Image;
+			PixelCombatPlus.enemyImage = new Image();
 			document.addEventListener('keydown', function(e) {
 				const chatInput = document.getElementById('chat-area-input');
 				const customCombatPanel = document.getElementById('panel-customCombat');
@@ -352,6 +359,7 @@ if (!document.getElementById('panel-customCombat')) {
 		
 		//Cooldown function
 		cooldownAbility: function(index,time) {
+			if (PixelCombatPlus.enemy.abilities[index] == undefined) {return}
 			PixelCombatPlus.enemy.abilities[index].cd = time;
 			if (time > 0) {
 				setTimeout(function(){
@@ -383,9 +391,9 @@ if (!document.getElementById('panel-customCombat')) {
 							};
 							if (PixelCombatPlus.enemy.magicImunity == false) {
 								PixelCombatPlus.enemy.hp -= fireDamage;
-								PixelCombatPlus.addHitSplat(fireDamage, 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Monster');
+								PixelCombatPlus.addHitSplat(fireDamage, 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Enemy');
 							} else {
-								PixelCombatPlus.addHitSplat('IMMUNE', 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Monster');
+								PixelCombatPlus.addHitSplat('IMMUNE', 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Enemy');
 							};
 							PixelCombatPlus.updateStatsBars();
 							PixelCombatPlus.cooldown('fireCooldown',5,'custom-fighting-spell-label-fire','Fire <span class="color-grey" style="color: rgb(128, 128, 128);">(W)</span>');
@@ -433,7 +441,7 @@ if (!document.getElementById('panel-customCombat')) {
 								PixelCombatPlus.enemy.hp += healAmount;
 								PixelCombatPlus.enemy.hp = Math.min(PixelCombatPlus.enemy.hp,PixelCombatPlus.enemy.maxHp);
 								PixelCombatPlus.updateStatsBars();
-								PixelCombatPlus.addHitSplat(healAmount, 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Monster');
+								PixelCombatPlus.addHitSplat(healAmount, 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Enemy');
 							break;
 							case 'poison':
 								if (PixelCombatPlus.hero.poisoned == false) {
@@ -450,13 +458,32 @@ if (!document.getElementById('panel-customCombat')) {
 									if (PixelCombatPlus.hero.isReflecting == true && damageDone > 0) {
 										PixelCombatPlus.enemy.hp -= damageDone;
 										PixelCombatPlus.hero.isReflecting = false;
-										PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Monster');
+										PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
 									} else {
 										PixelCombatPlus.hero.hp -= damageDone;
 										PixelCombatPlus.addHitSplat(damageDone,"images/sword_icon.png","white","rgba(255,0,0,0.6)","blue","Hero");
 									}
 									PixelCombatPlus.updateStatsBars();
 								}
+							break;
+							case 'chargeDamage':
+								PixelCombatPlus.cooldown('enemyIsCharging',4);
+								setTimeout(function() {
+									if (PixelCombatPlus.heroIsInvisible > 0) {
+										PixelCombatPlus.addHitSplat("MISSED","images/ghost_icon.png","white","rgba(255,0,0,0.6)","blue","Hero");
+									} else {
+										let damageDone = Math.floor(Math.random() * (ability.max - ability.min + 1) + ability.min);
+										if (PixelCombatPlus.hero.isReflecting == true && damageDone > 0) {
+											PixelCombatPlus.enemy.hp -= damageDone;
+											PixelCombatPlus.hero.isReflecting = false;
+											PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
+										} else {
+											PixelCombatPlus.hero.hp -= damageDone;
+											PixelCombatPlus.addHitSplat(damageDone,"images/sword_icon.png","white","rgba(255,0,0,0.6)","blue","Hero");
+										}
+										PixelCombatPlus.updateStatsBars();
+									}
+								},4000);
 							break;
 							case 'damageHeal':
 								if (PixelCombatPlus.heroIsInvisible > 0) {
@@ -466,13 +493,13 @@ if (!document.getElementById('panel-customCombat')) {
 									if (PixelCombatPlus.hero.isReflecting == true && damageDone > 0) {
 										PixelCombatPlus.enemy.hp -= damageDone;
 										PixelCombatPlus.hero.isReflecting = false;
-										PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Monster');
+										PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
 									} else {
 										PixelCombatPlus.hero.hp -= damageDone;
 										PixelCombatPlus.enemy.hp += damageDone;
 										PixelCombatPlus.enemy.hp = Math.min(PixelCombatPlus.enemy.hp,PixelCombatPlus.enemy.maxHp);
 										PixelCombatPlus.addHitSplat(damageDone,"images/sword_icon.png","white","rgba(255,0,0,0.6)","blue","Hero");
-										PixelCombatPlus.addHitSplat(damageDone, 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Monster');
+										PixelCombatPlus.addHitSplat(damageDone, 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Enemy');
 									}
 									PixelCombatPlus.updateStatsBars();
 								};
@@ -539,7 +566,7 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.hero.poisoned = false;
 			PixelCombatPlus.hero.isReflecting = false;
 			PixelCombatPlus.hitSplatHero = {};
-			PixelCombatPlus.hitSplatMonster = {};
+			PixelCombatPlus.hitSplatEnemy = {};
 			//Stats Update
 			PixelCombatPlus.fight = true; //Starts the fight
 			PixelCombatPlus.hero.hp = var_max_hp; //Set the current hero hp to max
@@ -608,16 +635,16 @@ if (!document.getElementById('panel-customCombat')) {
 				//Poison
 				if (PixelCombatPlus.enemy.poisoned == false && var_weapon.includes('poison')) {
 					PixelCombatPlus.enemy.poisoned = true;
-					PixelCombatPlus.poison('monster',5);
+					PixelCombatPlus.poison('enemy',5);
 				};
 				//If hit succeed 
 				if (PixelCombatPlus.hitRate(PixelCombatPlus.enemy.defence,var_accuracy)) {
 					if (PixelCombatPlus.enemyIsInvisible > 0) {
-						PixelCombatPlus.addHitSplat("MISSED","images/ghost_icon.png","white","rgba(255,0,0,0.6)","blue","Monster");
+						PixelCombatPlus.addHitSplat("MISSED","images/ghost_icon.png","white","rgba(255,0,0,0.6)","blue","Enemy");
 					} else {
 						if (ranged.includes(var_weapon)) {
 							if (PixelCombatPlus.enemy.arrowImunity == true) {
-								PixelCombatPlus.addHitSplat('IMMUNE', 'images/blocked.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Monster');
+								PixelCombatPlus.addHitSplat('IMMUNE', 'images/blocked.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Enemy');
 							} else {
 								let damageDone = Math.floor(Math.random() * parseInt(var_arrow_damage));
 								if ((PixelCombatPlus.enemy.weakToFire == true && var_arrows == 'fire_arrows') || (PixelCombatPlus.enemy.weakToIce == true && var_arrows == 'ice_arrows')) {
@@ -629,7 +656,7 @@ if (!document.getElementById('panel-customCombat')) {
 									PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Hero');
 								} else {
 									PixelCombatPlus.enemy.hp -= damageDone;
-									PixelCombatPlus.addHitSplat(damageDone, "images/" + Items.getItemString('weapon')+".png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Monster');
+									PixelCombatPlus.addHitSplat(damageDone, "images/" + Items.getItemString('weapon')+".png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
 								}
 							};
 						} else {
@@ -646,12 +673,16 @@ if (!document.getElementById('panel-customCombat')) {
 								PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Hero');
 							} else {
 								PixelCombatPlus.enemy.hp -= damageDone;
-								PixelCombatPlus.addHitSplat(damageDone, "images/" + Items.getItemString('weapon')+".png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Monster');
-							}
+								PixelCombatPlus.addHitSplat(damageDone, "images/" + Items.getItemString('weapon')+".png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
+								if (PixelCombatPlus.enemy.defender == true) {
+									PixelCombatPlus.hero.hp -= 1;
+									PixelCombatPlus.addHitSplat(1, "images/" + Items.getItemString('weapon')+".png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Hero');
+								};
+							};
 						};
 					}
 				} else {
-					PixelCombatPlus.addHitSplat("0", "images/blocked.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Monster');
+					PixelCombatPlus.addHitSplat("0", "images/blocked.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
 				};
 				//Hero attack again
 				if (PixelCombatPlus.hero.hp > 0 && PixelCombatPlus.enemy.hp > 0) {
@@ -666,7 +697,7 @@ if (!document.getElementById('panel-customCombat')) {
 						if (PixelCombatPlus.hero.isReflecting == true && damageDone > 0) {
 							PixelCombatPlus.enemy.hp -= damageDone;
 							PixelCombatPlus.hero.isReflecting = false;
-							PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Monster');
+							PixelCombatPlus.addHitSplat(damageDone, "images/reflect_spell.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
 						} else {
 							PixelCombatPlus.hero.hp -= damageDone;
 							PixelCombatPlus.addHitSplat(damageDone,"images/sword_icon.png","white","rgba(255,0,0,0.6)","blue","Hero");
@@ -717,7 +748,11 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.ticks++
 			if (PixelCombatPlus.ticks == 60) {
 				if (PixelCombatPlus.hero.hp <= 0 || PixelCombatPlus.enemy.hp <= 0) {
-					PixelCombatPlus.endFight();
+					if (PixelCombatPlus.enemy.multiphase) {
+						PixelCombatPlus.updateEnemyStats(PixelCombatPlus.enemy.nextPhase)
+					} else {
+						PixelCombatPlus.endFight();
+					}
 				};
 				if(PixelCombatPlus.startsIn <= 0) {PixelCombatPlus.specialAttack()}
 				PixelCombatPlus.ticks = 0;
@@ -728,6 +763,7 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.heroContext.clearRect(0, 0, PixelCombatPlus.heroCanvas.width, PixelCombatPlus.heroCanvas.height);
 			PixelCombatPlus.enemyContext.clearRect(0, 0, PixelCombatPlus.enemyCanvas.width, PixelCombatPlus.enemyCanvas.height);
 			if (PixelCombatPlus.heroIsInvisible > 0) {
+				PixelCombatPlus.heroContext.fillStyle = "white";
 				PixelCombatPlus.heroContext.globalAlpha = 0.1;
 				PixelCombatPlus.heroContext.fillRect(155, 20, 50, 50);
 				PixelCombatPlus.heroContext.drawImage(Cache.getImage("images/ghost_icon.png","hero_invisible"), 155, 20);
@@ -735,19 +771,29 @@ if (!document.getElementById('panel-customCombat')) {
 				PixelCombatPlus.heroContext.globalAlpha = 1.0;
 			};
 			if (PixelCombatPlus.enemyIsInvisible > 0) {
+				PixelCombatPlus.enemyContext.fillStyle = "white";
 				PixelCombatPlus.enemyContext.globalAlpha = 0.1;
-				PixelCombatPlus.enemyContext.fillRect(155, 20, 50, 50);
-				PixelCombatPlus.enemyContext.drawImage(Cache.getImage("images/ghost_icon.png","hero_invisible"), 155, 20);
+				PixelCombatPlus.enemyContext.fillRect(280, 20, 50, 50);
+				PixelCombatPlus.enemyContext.drawImage(Cache.getImage("images/ghost_icon.png","hero_invisible"), 280, 20);
 			} else {
 				PixelCombatPlus.enemyContext.globalAlpha = 1.0;
 			};
 			if (PixelCombatPlus.hero.isReflecting == true) {
+				PixelCombatPlus.heroContext.fillStyle = "white";
 				PixelCombatPlus.heroContext.fillRect(95, 20, 50, 50);
 				PixelCombatPlus.heroContext.drawImage(Cache.getImage("images/reflect_spell.png","hero_reflecting"), 95, 20);
 			};
 			if (PixelCombatPlus.enemy.isReflecting == true) {
-				PixelCombatPlus.enemyContext.fillRect(95, 20, 50, 50);
-				PixelCombatPlus.enemyContext.drawImage(Cache.getImage("images/reflect_spell.png","hero_reflecting"), 95, 20);
+				PixelCombatPlus.enemyContext.fillStyle = "white";
+				PixelCombatPlus.enemyContext.fillRect(170, 20, 50, 50);
+				PixelCombatPlus.enemyContext.drawImage(Cache.getImage("images/reflect_spell.png","hero_reflecting"), 170, 20);
+			};
+			if (PixelCombatPlus.enemyIsCharging > 0) {
+				PixelCombatPlus.enemyContext.fillStyle = "white";
+				PixelCombatPlus.enemyContext.fillRect(225, 20, 50, 50);
+				PixelCombatPlus.enemyContext.fillStyle = "black";
+				PixelCombatPlus.enemyContext.font = "50px serif";
+				PixelCombatPlus.enemyContext.fillText(PixelCombatPlus.enemyIsCharging, 238, 50);
 			};
 			PixelCombatPlus.heroContext.drawImage(Cache.getImage("images/hero_head_" + Items.getItemString('head')+".png","hero_fighting_head"), 0, 300);
 			PixelCombatPlus.heroContext.drawImage(Cache.getImage("images/hero_body_" + Items.getItemString('body')+".png","hero_fighting_body"), 0, 300);
@@ -769,8 +815,8 @@ if (!document.getElementById('panel-customCombat')) {
 			for (let key in PixelCombatPlus.hitSplatHero) {
 				PixelCombatPlus.hitSplatHero[key].draw(PixelCombatPlus.heroContext);
 			};
-			for (let key in PixelCombatPlus.hitSplatMonster) {
-				PixelCombatPlus.hitSplatMonster[key].draw(PixelCombatPlus.enemyContext);
+			for (let key in PixelCombatPlus.hitSplatEnemy) {
+				PixelCombatPlus.hitSplatEnemy[key].draw(PixelCombatPlus.enemyContext);
 			};
 		},
 		
@@ -799,7 +845,7 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.hero.poisoned = false;
 			PixelCombatPlus.hero.isReflecting = false;
 			PixelCombatPlus.hitSplatHero = {};
-			PixelCombatPlus.hitSplatMonster = {};
+			PixelCombatPlus.hitSplatEnemy = {};
 			PixelCombatPlus.healCooldown = 0;
 			PixelCombatPlus.fireCooldown = 0;
 			PixelCombatPlus.reflectCooldown = 0;
