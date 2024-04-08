@@ -51,19 +51,17 @@ if (!document.getElementById('panel-customCombat')) {
     'use strict';
 	const PixelCombatPlus = {
 		initialize: function () {
-            window.addEventListener('load', function () {
-                PixelCombatPlus.newFightPanel();
-                PixelCombatPlus.newModals();
-				if (IdlePixelPlus) {
-					IdlePixelPlus.panels.customCombat = {id:'customCombat',title:'',content:''}
-				} else {
-					const og_switch_panels = window.switch_panels;
-					window.switch_panels = function(id) {
-						document.getElementById('panel-customCombat').style.display = "none";
-						og_switch_panels.apply(this, arguments);
-					}
+			PixelCombatPlus.newFightPanel();
+			PixelCombatPlus.newModals();
+			if (IdlePixelPlus) {
+				IdlePixelPlus.panels.customCombat = {id:'customCombat',title:'',content:''}
+			} else {
+				const og_switch_panels = window.switch_panels;
+				window.switch_panels = function(id) {
+					document.getElementById('panel-customCombat').style.display = "none";
+					og_switch_panels.apply(this, arguments);
 				}
-            });
+			}
         },
 		//Fighting toggle
 		fight: false,
@@ -104,6 +102,7 @@ if (!document.getElementById('panel-customCombat')) {
 		hero: {
 			hp:0,
 			mana:0,
+			revive:0,
 			isReflecting:false,
 			poisoned: false
 		},
@@ -359,7 +358,8 @@ if (!document.getElementById('panel-customCombat')) {
 		
 		//Cooldown function
 		cooldownAbility: function(index,time) {
-			if (PixelCombatPlus.enemy.abilities[index] == undefined) {return}
+			if (PixelCombatPlus.fight == false) {PixelCombatPlus.enemy.abilities = []};
+			if (PixelCombatPlus.enemy.abilities[index] == undefined) {return};
 			PixelCombatPlus.enemy.abilities[index].cd = time;
 			if (time > 0) {
 				setTimeout(function(){
@@ -549,16 +549,32 @@ if (!document.getElementById('panel-customCombat')) {
 		//Update the enemy stats mid fight, can be used for pvp
 		updateEnemyStats: function(foe) {
 			PixelCombatPlus.enemyImage.src = foe.image;
+			PixelCombatPlus.enemy.abilities = [];
 			for (const key in foe) {
 				PixelCombatPlus.enemy[key] = foe[key];
 			};
 			PixelCombatPlus.updateStatsBars();
-			
+			PixelCombatPlus.enemy.abilities.forEach(function(ability,index) {if (ability.cd > 0){PixelCombatPlus.cooldownAbility(index,ability.cd)}});
 			document.getElementById("custom-fighting-monster-label").innerText = PixelCombatPlus.enemy.name;
 			document.getElementById("custom_combat_monster_accuracy").innerText = PixelCombatPlus.enemy.accuracy == -1 ? 1 : PixelCombatPlus.enemy.accuracy;
 			document.getElementById("custom_combat_monster_attack").innerText = PixelCombatPlus.enemy.damage;
 			document.getElementById("custom_combat_monster_speed").innerText = PixelCombatPlus.enemy.speed;
 			document.getElementById("custom_combat_monster_defence").innerText = PixelCombatPlus.enemy.defence;
+		},
+		
+		//Define the enemy image
+		setEnemyImage: function(foe) {
+			try {
+				PixelCombatPlus.enemyImage.src = foe;
+			} catch (error) {
+				setTimeout(function() {
+					try {
+						PixelCombatPlus.enemyImage.src = foe;
+					} catch (error) {
+						PixelCombatPlus.setEnemyImage(foe)
+					}
+				}, 1000);
+			}
 		},
 		
 		//Starts the fight
@@ -570,11 +586,11 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.hero.isReflecting = false;
 			PixelCombatPlus.hitSplatHero = {};
 			PixelCombatPlus.hitSplatEnemy = {};
+			PixelCombatPlus.hero.revive = 0;
 			//Stats Update
-			PixelCombatPlus.fight = true; //Starts the fight
 			PixelCombatPlus.hero.hp = var_max_hp; //Set the current hero hp to max
 			PixelCombatPlus.hero.mana = var_max_mana; //Set the current hero mana to max
-			PixelCombatPlus.enemyImage.src = foe.image; //Set the enemy image
+			PixelCombatPlus.setEnemyImage(foe.image) //Set the enemy image
 			for (const key in foe) {PixelCombatPlus.enemy[key] = foe[key]}; //Set the current enemy
 			PixelCombatPlus.enemy.poisoned = false; //Removes poison
 			if (PixelCombatPlus.enemy.speed > 6) {PixelCombatPlus.enemy.speed = 6}; // 6 is the max speed
@@ -602,6 +618,7 @@ if (!document.getElementById('panel-customCombat')) {
 			document.getElementById('menu-bar').style.display = "none"; //Hides lateral bar
 			document.getElementById('notification-custom-combat').style.display = "" //Shows the combat notification
 			document.getElementById('notification-custom-combat').style.display = "" //Shows the combat notification
+			PixelCombatPlus.fight = true; //Starts the fight
 
 			PixelCombatPlus.cooldown('startsIn',5,'custom-fighting-countdown','hide'); //Start the timer to fight
 			PixelCombatPlus.ticking = setInterval(function() {
@@ -634,7 +651,7 @@ if (!document.getElementById('panel-customCombat')) {
 		
 		//Attack function 
 		attack: function(attacker){
-			if (PixelCombatPlus.hero.hp > 0 && PixelCombatPlus.enemy.hp > 0) {
+			if (PixelCombatPlus.fight == true) {
 			if (attacker == "hero") {
 				//Poison
 				if (PixelCombatPlus.enemy.poisoned == false && var_weapon.includes('poison')) {
@@ -689,9 +706,7 @@ if (!document.getElementById('panel-customCombat')) {
 					PixelCombatPlus.addHitSplat("0", "images/blocked.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Enemy');
 				};
 				//Hero attack again
-				if (PixelCombatPlus.hero.hp > 0 && PixelCombatPlus.enemy.hp > 0) {
-					setTimeout(function(){PixelCombatPlus.attack("hero")},(7-var_speed)*1000)
-				};
+				setTimeout(function(){PixelCombatPlus.attack("hero")},(7-var_speed)*1000)
 			} else {
 				if (PixelCombatPlus.hitRate(var_defence,PixelCombatPlus.enemy.accuracy)) {
 					if (PixelCombatPlus.heroIsInvisible > 0) {
@@ -711,9 +726,7 @@ if (!document.getElementById('panel-customCombat')) {
 					PixelCombatPlus.addHitSplat("0", "images/blocked.png", 'white', 'rgba(255,0,0,0.6)', 'blue', 'Hero');
 				};
 				//Enemy attack again
-				if (PixelCombatPlus.hero.hp > 0 && PixelCombatPlus.enemy.hp > 0) {
-					setTimeout(function(){PixelCombatPlus.attack("enemy")},(7-PixelCombatPlus.enemy.speed)*1000)
-				};
+				setTimeout(function(){PixelCombatPlus.attack("enemy")},(7-PixelCombatPlus.enemy.speed)*1000)
 			}
 			//Update hps
 			PixelCombatPlus.updateStatsBars();
@@ -759,7 +772,13 @@ if (!document.getElementById('panel-customCombat')) {
 					}
 				};
 				if (PixelCombatPlus.hero.hp <= 0) {
-					PixelCombatPlus.endFight();
+					if (var_badge_death_1_hp == 1 && PixelCombatPlus.hero.revive == 0) {
+						PixelCombatPlus.hero.hp = 1;
+						PixelCombatPlus.hero.revive = 1;
+						PixelCombatPlus.updateStatsBars();
+					} else {
+						PixelCombatPlus.endFight();
+					}
 				};
 				if(PixelCombatPlus.startsIn <= 0) {PixelCombatPlus.specialAttack()}
 				PixelCombatPlus.ticks = 0;
@@ -800,7 +819,7 @@ if (!document.getElementById('panel-customCombat')) {
 				PixelCombatPlus.enemyContext.fillRect(225, 20, 50, 50);
 				PixelCombatPlus.enemyContext.fillStyle = "black";
 				PixelCombatPlus.enemyContext.font = "50px serif";
-				PixelCombatPlus.enemyContext.fillText(PixelCombatPlus.enemyIsCharging, 238, 50);
+				PixelCombatPlus.enemyContext.fillText(PixelCombatPlus.enemyIsCharging, 238, 60);
 			};
 			PixelCombatPlus.heroContext.drawImage(Cache.getImage("images/hero_head_" + Items.getItemString('head')+".png","hero_fighting_head"), 0, 300);
 			PixelCombatPlus.heroContext.drawImage(Cache.getImage("images/hero_body_" + Items.getItemString('body')+".png","hero_fighting_body"), 0, 300);
@@ -860,6 +879,7 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.reflectCooldown = 0;
 			PixelCombatPlus.invisibilityCooldown = 0;
 			PixelCombatPlus.heroIsInvisible = 0;
+			PixelCombatPlus.hero.revive = 0;
 			if (PixelCombatPlus.enemy.hp <= 0) {
 				if (typeof PixelCombatPlus.enemy.lootTable == 'object') {
 					PixelCombatPlus.enemy.lootFunction(PixelCombatPlus.looting());
@@ -870,7 +890,9 @@ if (!document.getElementById('panel-customCombat')) {
 			} else if (PixelCombatPlus.hero.hp <= 0) {
 				console.log('loser');
 			}
-			PixelCombatPlus.enemy = defaultEnemy;
+			for (const key in defaultEnemy) {
+				PixelCombatPlus.enemy[key] = defaultEnemy[key];
+			};
 			switch_panels('panel-combat');
 			document.getElementById('notification-custom-combat').style.display = "none" //Hide the combat notification
 		}
