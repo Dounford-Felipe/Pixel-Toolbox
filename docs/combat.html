@@ -17,7 +17,7 @@
 	<a class="active" href="combat.html">Pixel Combat</a>
 </ul>
 <div class="container">
-<h2>Including Pixel Shop+</h2>
+<h2>Including Pixel Combat+</h2>
 <p>First, you need to grab the require link for the latest version of the script. Head over to Greasy Fork <a href="https://greasyfork.org/en/scripts/491625-pixel-combat">https://greasyfork.org/en/scripts/491625-pixel-combat</a> and copy the bit that starts with // @require, but remove the ?version=whatever bit at the end. This needs to be added to your script's metadata (on top of the script). If you wish to target a specific version however, you can leave the ?version in - but this is not recommended as it can lead to multiple versions of the library being included and conflicting with each other.</p>
 
 <h2>Creating Enemies</h2>
@@ -105,7 +105,7 @@ Example of how the function will be called: lootFunction([{item:'basalt',amount:
 </code></pre>
 
 <h2>Multi Phase</h2>
-<p>This can be used to create chainned fights like the Robot Waves</p>
+<p>This can be used to create chained fights like the Robot Waves</p>
 <p><b>The next enemy needs to be defined before the current one</b></p>
 <pre><code class="language-javascript">multiPhase: true, //If true the next enemy will be loaded as soon as the HP of the current enemy reaches 0
 nextPhase:enemyName2, //The enemy that will be spawned after the current is defeated

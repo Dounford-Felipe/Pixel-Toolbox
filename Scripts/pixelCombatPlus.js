@@ -466,6 +466,7 @@ if (!document.getElementById('panel-customCombat')) {
 								}
 							break;
 							case 'chargeDamage':
+								if (PixelCombatPlus.enemyIsCharging > 0) {return};
 								PixelCombatPlus.cooldown('enemyIsCharging',4);
 								setTimeout(function() {
 									if (PixelCombatPlus.heroIsInvisible > 0) {
@@ -554,7 +555,7 @@ if (!document.getElementById('panel-customCombat')) {
 			PixelCombatPlus.updateStatsBars();
 			
 			document.getElementById("custom-fighting-monster-label").innerText = PixelCombatPlus.enemy.name;
-			document.getElementById("custom_combat_monster_accuracy").innerText = PixelCombatPlus.enemy.accuracy;
+			document.getElementById("custom_combat_monster_accuracy").innerText = PixelCombatPlus.enemy.accuracy == -1 ? 1 : PixelCombatPlus.enemy.accuracy;
 			document.getElementById("custom_combat_monster_attack").innerText = PixelCombatPlus.enemy.damage;
 			document.getElementById("custom_combat_monster_speed").innerText = PixelCombatPlus.enemy.speed;
 			document.getElementById("custom_combat_monster_defence").innerText = PixelCombatPlus.enemy.defence;
@@ -592,7 +593,7 @@ if (!document.getElementById('panel-customCombat')) {
 			document.getElementById("custom_combat_hero_defence").innerText = var_defence;
 			//Enemy Stats
 			document.getElementById("custom-fighting-monster-label").innerText = PixelCombatPlus.enemy.name;
-			document.getElementById("custom_combat_monster_accuracy").innerText = PixelCombatPlus.enemy.accuracy;
+			document.getElementById("custom_combat_monster_accuracy").innerText = PixelCombatPlus.enemy.accuracy == -1 ? 1 : PixelCombatPlus.enemy.accuracy;
 			document.getElementById("custom_combat_monster_attack").innerText = PixelCombatPlus.enemy.damage;
 			document.getElementById("custom_combat_monster_speed").innerText = PixelCombatPlus.enemy.speed;
 			document.getElementById("custom_combat_monster_defence").innerText = PixelCombatPlus.enemy.defence;
@@ -617,6 +618,7 @@ if (!document.getElementById('panel-customCombat')) {
 		
 		//Hit function
 		hitRate: function(defence,accuracy) {
+			if (accuracy == -1) {return false};
 			let hitRandom = Math.random();
 			let hitChance = 0;
 			if (((defence / 2) - accuracy) > 4) {
@@ -828,10 +830,12 @@ if (!document.getElementById('panel-customCombat')) {
 		looting: function() {
 			let lootedItems = [];
 			let lootedItemsHTML = '';
+			document.getElementById('modal-custom-loot-body').innerHTML = ''
 			PixelCombatPlus.enemy.lootTable.forEach(function(loot){
 				let dropChance = Math.random() * (loot.chance - 1) + 1;
 				if (loot.chance == dropChance) {
 					let dropAmount = Math.random() * (loot.max - loot.min) + loot.min;
+					if (dropAmount == 0) {dropAmount = ''};
 					lootedItemsHTML += `<div class="loot" style="background-color:#cce6ff">
 						<img src="${loot.image}" class="w50 me-3">${dropAmount} ${loot.item}
 					</div>`;
