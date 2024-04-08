@@ -4,7 +4,7 @@
 // @version      1.0.0
 // @description  Makes it easier to create new custom enemies for Idle Pixel
 // @author       Dounford
-// @license      MIT
+// @license      All Rights Reserved
 // @match        *://idle-pixel.com/login/play*
 // @grant        none
 // ==/UserScript==
@@ -19,7 +19,7 @@ let defaultEnemy = {
 	damage:2,
 	speed:3,
 	defence:5,
-	multiphase: false,
+	multiPhase: false,
 	nextPhase:'',
 	arrowImunity:false,
 	magicImunity:false,
@@ -85,7 +85,7 @@ if (!document.getElementById('panel-customCombat')) {
 			damage:2,
 			speed:3,
 			defence:5,
-			multiphase: false,
+			multiPhase: false,
 			nextPhase:'',
 			arrowImunity:false,
 			magicImunity:false,
@@ -444,11 +444,10 @@ if (!document.getElementById('panel-customCombat')) {
 								PixelCombatPlus.addHitSplat(healAmount, 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Enemy');
 							break;
 							case 'poison':
-								if (PixelCombatPlus.hero.poisoned == false) {
-									PixelCombatPlus.hero.poisoned = true;
-									const poisonDamage = ability.poison || 5
-									PixelCombatPlus.poison('hero',poisonDamage)
-								};
+								if (PixelCombatPlus.hero.poisoned == true) {return}
+								PixelCombatPlus.hero.poisoned = true;
+								const poisonDamage = ability.poison || 5
+								PixelCombatPlus.poison('hero',poisonDamage)
 							break;
 							case 'damage':
 								if (PixelCombatPlus.heroIsInvisible > 0) {
@@ -485,7 +484,7 @@ if (!document.getElementById('panel-customCombat')) {
 									}
 								},4000);
 							break;
-							case 'damageHeal':
+							case 'lifeSteal':
 								if (PixelCombatPlus.heroIsInvisible > 0) {
 									PixelCombatPlus.addHitSplat("MISSED","images/ghost_icon.png","white","rgba(255,0,0,0.6)","blue","Hero");
 								} else {
@@ -509,9 +508,12 @@ if (!document.getElementById('panel-customCombat')) {
 								PixelCombatPlus.endFight();
 							break;
 							case "invisibility":
-								PixelCombatPlus.cooldown('enemyIsInvisible',4);
+								if (PixelCombatPlus.enemyIsInvisible > 0) {return}
+								let invisibleTime = Math.floor(Math.random() * (ability.max - ability.min + 1) + ability.min);
+								PixelCombatPlus.cooldown('enemyIsInvisible',invisibleTime);
 							break;
 							case "reflect":
+								if (PixelCombatPlus.enemy.isReflecting == true) {return};
 								PixelCombatPlus.enemy.isReflecting = true;
 							break;
 						};
@@ -747,12 +749,15 @@ if (!document.getElementById('panel-customCombat')) {
 			
 			PixelCombatPlus.ticks++
 			if (PixelCombatPlus.ticks == 60) {
-				if (PixelCombatPlus.hero.hp <= 0 || PixelCombatPlus.enemy.hp <= 0) {
-					if (PixelCombatPlus.enemy.multiphase) {
+				if (PixelCombatPlus.enemy.hp <= 0) {
+					if (PixelCombatPlus.enemy.multiPhase) {
 						PixelCombatPlus.updateEnemyStats(PixelCombatPlus.enemy.nextPhase)
 					} else {
 						PixelCombatPlus.endFight();
 					}
+				};
+				if (PixelCombatPlus.hero.hp <= 0) {
+					PixelCombatPlus.endFight();
 				};
 				if(PixelCombatPlus.startsIn <= 0) {PixelCombatPlus.specialAttack()}
 				PixelCombatPlus.ticks = 0;

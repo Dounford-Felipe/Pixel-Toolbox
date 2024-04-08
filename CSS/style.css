@@ -60,3 +60,8 @@ a:visited {
 	background-color: #04AA6D;
 	color: white;
 }
+
+html {
+  scroll-behavior: smooth;
+  /*Adds smooth scrolling instead of snapping to element*/
+}

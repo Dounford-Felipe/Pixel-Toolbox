@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="../CSS/style.css">
     <title>Pixel Combat+</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark-reasonable.min.css" />
+	<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/highlight.min.js"></script>
 </head>
 <body>
 
@@ -15,6 +17,225 @@
 	<a class="active" href="combat.html">Pixel Combat</a>
 </ul>
 <div class="container">
-<p><b>Pixel Combat+</b> still a working in progress, it should be realesed later this year.</p>
+<h2>Including Pixel Shop+</h2>
+<p>First, you need to grab the require link for the latest version of the script. Head over to Greasy Fork <a href="https://greasyfork.org/en/scripts/491625-pixel-combat">https://greasyfork.org/en/scripts/491625-pixel-combat</a> and copy the bit that starts with // @require, but remove the ?version=whatever bit at the end. This needs to be added to your script's metadata (on top of the script). If you wish to target a specific version however, you can leave the ?version in - but this is not recommended as it can lead to multiple versions of the library being included and conflicting with each other.</p>
+
+<h2>Creating Enemies</h2>
+<p><b>All enemies follow a pattern of how they should be created</b></p>
+<pre><code class="language-javascript">//This is a enemy with all possible keys:
+enemyName: {
+	name:'Enemy Name',
+	image:"https://example.com/example.png",
+	hp:1,
+	maxHp:1,
+	accuracy:0,
+	damage:1,
+	speed:3,
+	defence:0,
+	multiPhase: false,
+	nextPhase:'',
+	arrowImunity:false,
+	magicImunity:false,
+	needsLight:false,
+	defender: false,
+	weakToFire:false,
+	weakToIce:false,
+	ghost: false,
+	fish: false,
+	lootTable: "",
+	lootFunction: "",
+	winFunction: "",
+	abilities: []
+}
+
+//Use this as a template, if there is any missing key the script will use the default enemy stats.
+</code></pre>
+
+<h2>Basic Stats</h2>
+<p>These are the stats that don't have special properties.</p>
+<pre><code class="language-javascript">name:'Enemy Name', //The displayed Name
+image:"https://example.com/example.png", //The image shown during the fight, 500x600px is the perfect resolution
+hp:1, //How much hp the enemy stats with, can't be higher than maxHp
+maxHp:1, //The maximum HP the enemy can get
+accuracy:0, //The change of hitting the player
+damage:1, //The maximum damage each hit can get
+speed:3, //How fast it attacks
+defence:0 //The change of dodging the player attack 
+</code></pre>
+
+<h2>Immunities and Penalties</h2>
+<p>These are stats that grant Immunities to the enemy or apply Debuffs to the player.</p>
+<pre><code class="language-javascript">arrowImunity:false, //If true every ranged attack will miss
+magicImunity:false, //If true it can't be damaged with spells
+needsLight:false, //If true and Latern or Ring of Light are not equiped the player will receive a penalty on Hit Chance
+defender: false //If true the player will loss 1 HP each successful hit
+</code></pre>
+
+<h2>Weakness</h2>
+<p>These are stats that change the amound of damage inflicted on the enemy</p>
+<pre><code class="language-javascript">weakToFire:false, //If true Fire based attacks and spells with inflict double damage
+weakToIce:false, //If true Ice based attacks and spells with inflict double damage
+ghost: false, //If true Scythe with inflict double damage and Double Scythe 4x damage
+fish: false //If true Tridents will inflict double damage
+</code></pre>
+
+<h2>Loot</h2>
+<p>This can be used if your script has any type of custom loot</p>
+<p>The lootFunction can be useless, but it needs to exist if you want the loot to be displayed</p>
+<pre><code class="language-javascript">//You can add as many items to as you want, the format is as follow:
+lootTable: [lootableItems]
+let lootableItem1 = {
+	item:'testLoot', //The item name, this will be returned if the player get any
+	image:'https://example.com/exampleLoot.png', //Image displayed if the player get any
+	min:1, //The minimum amount of the item the player can get
+	max:10, //The maximum amount of the item the player can get
+	chance:0.5 //The change of getting the item (0-1)
+}
+lootTable: [lootableItem1,lootableItem2,lootableItem100]
+
+lootFunction: function(){IdlePixelPlus.plugins.myplugin.myFunction()} //This function will be called with the loot as objects inside a single array
+Example of how the function will be called: lootFunction([{item:'basalt',amount:20}, {item:'jade',amount:2}, {item:'jasmin',amount:560}])
+//In case you don't need/want this feature you can have both lootTable and lootFunction as empty strings
+</code></pre>
+
+<h2>Win Function</h2>
+<p>This can be used if you want to call a function after winning the fight</p>
+<pre><code class="language-javascript">winFunction: function(){IdlePixelPlus.plugins.myplugin.myFunction()} //After winning this function will be called
+//In case you don't need/want this feature you can have winFunction as empty string
+</code></pre>
+
+<h2>Multi Phase</h2>
+<p>This can be used to create chainned fights like the Robot Waves</p>
+<p><b>The next enemy needs to be defined before the current one</b></p>
+<pre><code class="language-javascript">multiPhase: true, //If true the next enemy will be loaded as soon as the HP of the current enemy reaches 0
+nextPhase:enemyName2, //The enemy that will be spawned after the current is defeated
+//In case you don't need/want this feature you can have multiPhase as false and nextPhase as empty string
+</code></pre>
+
+<h2>Abilities</h2>
+<p>There are multiple types of abilities, each enemy can have as many as you want, being it different abilities or multiple of the same</p>
+<p>The types are: <b><a href="#heal">Heal</a>, <a href="#poison">Poison</a>, <a href="#damage">Damage</a>, <a href="#chargeDamage">Charge Damage</a>, <a href="#lifeSteal">Life Steal</a>, <a href="#invisibility">Invisibility</a>, <a href="#reflect">Reflect</a> and <a href="#kamikaze">Kamikaze</a></b></p>
+<pre><code class="language-javascript">//You can add as many abilities as you want, the format is as follow:
+abilities:[ability1,ability2,ability100]
+//Each type of ability has its own parameters, but some are always required
+let ability1 = {
+	type: 'abilityType', // This will define which ability will be used
+	limit: 3, //How many times the ability can be used, use -1 for unlimited amount of uses
+	chance: 0.21, //The change of the ability being used (0-1)
+	cooldown: 3, //The amount of seconds between each use
+	cd:10 //The amount of time between startIn reaches 0 and the first use of the ability
+}
+//If the enemy does not have abilities leave abilities as an empty array
+</code></pre>
+
+<h3 id='heal'>Heal</h3>
+<p>Regen the enemy's HP</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'heal',// This will define which ability will be used
+	limit: -1, //How many times the ability can be used, use -1 for unlimited amount of uses
+	chance: 1, //The change of the ability being used (0-1)
+	cooldown: 3, //The amount of seconds between each use
+	min:5, //The minimum HP restored when used
+	max:20, //The maximum HP restored when used
+	cd:10 //The amount of time between startIn reaches 0 and the first use of the ability
+}
+</code></pre>
+
+<h3 id='poison'>Poison</h3>
+<p>Damage the player once each 4 seconds, can only be used once</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'poison',// This will define which ability will be used
+	limit: 1, //Use 1, unless the chance is bellow 1
+	chance: 1, //The change of the ability being used (0-1)
+	cooldown: 3, //The amount of seconds between each use, only matters if the chance is bellow 1
+	poison: 5, //The damage inflicted each 4 seconds
+	cd:10 //The amount of time between startIn reaches 0 and the use of the ability
+}
+</code></pre>
+
+<h3 id='damage'>Damage</h3>
+<p>Damage the player as soon as it is used</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'damage',// This will define which ability will be used
+	limit: -1, //How many times the ability can be used, use -1 for unlimited amount of uses
+	chance: 0.1, //The change of the ability being used (0-1)
+	cooldown: 3, //The amount of seconds between each use
+	min:5, //The minimum damage done when used
+	max:20, //The maximum damage done when used
+	cd:10 //The amount of time between startIn reaches 0 and the first use of the ability
+}
+</code></pre>
+
+<h3 id='chargeDamage'>Charge Damage</h3>
+<p>Damage the player after 4 seconds</p>
+<p>The cooldown should not be bellow 4</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'chargeDamage',// This will define which ability will be used
+	limit: -1, //How many times the ability can be used, use -1 for unlimited amount of uses
+	chance: 1, //The change of the ability being used (0-1)
+	cooldown: 4, //The amount of seconds between each use
+	min:5, //The minimum damage done when used
+	max:20, //The maximum damage done when used
+	cd:10 //The amount of time between startIn reaches 0 and the first use of the ability
+}
+//The cooldown will be shown bellow the enemy's health bar
+</code></pre>
+
+<h3 id='lifeSteal'>Life Steal</h3>
+<p>Steal an amount of HP from the player</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'lifeSteal',// This will define which ability will be used
+	limit: -1, //How many times the ability can be used, use -1 for unlimited amount of uses
+	chance: 0.31, //The change of the ability being used (0-1)
+	cooldown: 3, //The amount of seconds between each use
+	min:5, //The minimum HP stolen when used
+	max:20, //The maximum HP stolen when used
+	cd:10 //The amount of time between startIn reaches 0 and the first use of the ability
+}
+</code></pre>
+
+<h3 id='invisibility'>Invisibility</h3>
+<p>Ignore all damage</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'invisibility',// This will define which ability will be used
+	limit: -1, //How many times the ability can be used, use -1 for unlimited amount of uses
+	chance: 0.71, //The change of the ability being used (0-1)
+	cooldown: 4, //The amount of seconds between each use
+	min:1, //The minimum amount of seconds invisible when used
+	max:5, //The maximum amount of seconds invisible when used
+	cd:10 //The amount of time between startIn reaches 0 and the first use of the ability
+}
+//It will be ignored if the enemy already is invisible
+//The invisible time will be shown bellow the enemy's health bar
+</code></pre>
+
+<h3 id='reflect'>Reflect</h3>
+<p>Reflect the next player's Phisical Attack</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'reflect',// This will define which ability will be used
+	limit: -1, //How many times the ability can be used, use -1 for unlimited amount of uses
+	chance: 1, //The change of the ability being used (0-1)
+	cooldown: 4, //The amount of seconds between each use
+	cd:10 //The amount of time between startIn reaches 0 and the first use of the ability
+}
+//It will be ignored if the enemy already is reflecting
+//An icon will be shown bellow the enemy's health bar
+</code></pre>
+
+<h3 id='kamikaze'>Kamikaze</h3>
+<p>Kill the player and ends the fight</p>
+<pre><code class="language-javascript">let ability1 = {
+	type: 'kamikaze',// This will define which ability will be used
+	limit: 1, //Use 1, unless the chance is bellow 1
+	chance: 1, //The change of the ability being used (0-1)
+	cooldown: 3, //The amount of seconds between each use, only matters if the chance is bellow 1
+	cd:160 //The amount of time between startIn reaches 0 and the use of the ability
+}
+</code></pre>
+
+
+
+</div>
+<script>hljs.highlightAll();</script>
 </body>
 </html>
