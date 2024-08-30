@@ -108,7 +108,7 @@ if (!document.getElementById('shopButtons')) {
 		//Register a new coin
 		newCoin: function(coin) {
 			if (typeof PixelShopPlus.coins[coin.name] == 'undefined') {
-				PixelShopPlus.coins[coin.name] = {image:coin.image,value:coin.value}
+				PixelShopPlus.coins[coin.name] = {...coin}
 			}
 		},
 		
@@ -149,7 +149,7 @@ if (!document.getElementById('shopButtons')) {
 		},
 		
 		//Register a new shop
-		newShop: function (shop,coin) {
+		newShop: function (shop,coin,beforeFunction) {
 			PixelShopPlus.shops.push(shop);
 			PixelShopPlus.items[shop] = {};
 			let newTabButton = document.createElement('div');
@@ -176,6 +176,9 @@ if (!document.getElementById('shopButtons')) {
 				newShopPanel.appendChild(newCoinImage);
 				newShopPanel.appendChild(newCoinValue);
 			}
+			if (typeof beforeFunction == 'function') {
+				PixelShopPlus.items[shop].beforeFunction = beforeFunction;
+			}
 			newShopPanel.insertAdjacentHTML('beforeend', '<hr>');
 			document.getElementById('panel-shop').appendChild(newShopPanel);
 		},
@@ -184,19 +187,17 @@ if (!document.getElementById('shopButtons')) {
 		newItems: function(shop,items) {
 			items.forEach(function(item) {
 				PixelShopPlus.items[shop][item.name] = item;
-				if (item.bought == false) {
-					let newShopItem = `<div id="shop-${item.name}" onclick="PixelShopPlus.openBuyModal('${shop}','${item.name}')" class="game-shop-box hover shadow" data-tooltip="shop-${item.name}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true" title="" data-bs-original-title="${item.tooltipText}" style="margin-right: 5px;">
-						<div class="center mt-1">
-							<img src="${item.imageUrl}" title="${item.name}" style="height: 50px;">
-						</div>
-						<div class="center mt-1">
-							<img src="${PixelShopPlus.coins[item.coin].image}" title="${item.coin}" class="w20">
-							<span id="${item.name}-shop-cost">${format_number(item.price)}</span>
-						</div>
-				   </div>`
-					document.getElementById(shop + 'Shop').insertAdjacentHTML('beforeend',newShopItem)
-				   $('#shop-' + item.name).tooltip()
-				}
+				let newShopItem = `<div id="shop-${item.name}" onclick="PixelShopPlus.openBuyModal('${shop}','${item.name}')" class="game-shop-box hover shadow" data-tooltip="shop-${item.name}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true" title="" data-bs-original-title="${item.tooltipText}" style="margin-right: 5px;">
+					<div class="center mt-1">
+						<img src="${item.imageUrl}" title="${item.name}" style="height: 50px;">
+					</div>
+					<div class="center mt-1">
+						<img src="${PixelShopPlus.coins[item.coin].image}" title="${item.coin}" class="w20">
+						<span id="${item.name}-shop-cost">${format_number(item.price)}</span>
+					</div>
+				</div>`
+				document.getElementById(shop + 'Shop').insertAdjacentHTML('beforeend',newShopItem)
+				$('#shop-' + item.name).tooltip()
 			})
 		},
 		
@@ -206,7 +207,6 @@ if (!document.getElementById('shopButtons')) {
 			removedItem.parentNode.removeChild(removedItem);
 			delete PixelShopPlus.items[shop][item];
 			console.log(item + ' from ' + shop + ' Shop was removed');
-			PixelShopPlus.saveCoins();
 		},
 		
 		//Open Buy Confirm
@@ -215,24 +215,31 @@ if (!document.getElementById('shopButtons')) {
 				document.getElementById('customShopModalShop').value = shop;
 				document.getElementById('customShopModalItem').value = item;
 				document.getElementById('customShopModalImage').src = PixelShopPlus.items[shop][item].imageUrl;
-				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].buyText;
+				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].buyText || "Buy?";
 				document.getElementById('customShopModalBuy').style.display='';
 				document.getElementById('customShopModalParent').style.display='';
 			}
 		},
 		
 		//Buy Item
-		buyItem: function() {
+		buyItem: async function() {
 			let shop = document.getElementById('customShopModalShop').value;
 			let item = document.getElementById('customShopModalItem').value;
 			let price = PixelShopPlus.items[shop][item].price
 			let coin = PixelShopPlus.items[shop][item].coin;
 			if (PixelShopPlus.coins[coin].value >= price) {
+				if (typeof PixelShopPlus.items[shop].beforeFunction == "function") {
+					success = await PixelShopPlus.items[shop].beforeFunction(item)
+					if (!success) {
+						document.getElementById('customShopModalBuy').style.display='none';
+						document.getElementById('customShopModalText').innerText = "You are unable to buy this, sorry.";
+						return
+					}
+				}
 				PixelShopPlus.coinDecrease(coin,price);
-				PixelShopPlus.items[shop][item].bought = true;
 				document.getElementById('shop-' + item).style.display = "none";
 				document.getElementById('customShopModalBuy').style.display="none";
-				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].boughtText;
+				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].boughtText || "Bought!";
 				if(typeof PixelShopPlus.items[shop][item].callback == "function") {
 					PixelShopPlus.items[shop][item].callback()
 				}

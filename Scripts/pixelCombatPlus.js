@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pixel Combat+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes it easier to create new custom enemies for Idle Pixel
 // @author       Dounford
 // @license      All Rights Reserved
@@ -516,6 +516,24 @@ if (!document.getElementById('panel-customCombat')) {
 							case "reflect":
 								if (PixelCombatPlus.enemy.isReflecting == true) {return};
 								PixelCombatPlus.enemy.isReflecting = true;
+							break;
+							case "fullRestorePlayer":
+								PixelCombatPlus.hero.hp = var_max_hp; //Set the current hero hp to max
+								PixelCombatPlus.hero.mana = var_max_mana; //Set the current hero mana to max
+								PixelCombatPlus.updateStatsBars();
+							break;
+							case "restorePlayerHP":
+								let healAmounts = Math.floor(Math.random() * (ability.max - ability.min + 1) + ability.min)
+								PixelCombatPlus.hero.hp += healAmounts;
+								PixelCombatPlus.hero.hp = Math.min(PixelCombatPlus.hero.hp,var_max_hp);
+								PixelCombatPlus.updateStatsBars();
+								PixelCombatPlus.addHitSplat(healAmounts, 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Hero');
+							break;
+							case "restorePlayerMana":
+								let manaAmount = Math.floor(Math.random() * (ability.max - ability.min + 1) + ability.min)
+								PixelCombatPlus.hero.mana += manaAmount;
+								PixelCombatPlus.hero.mana = Math.min(PixelCombatPlus.hero.mana,var_max_mana);
+								PixelCombatPlus.updateStatsBars();
 							break;
 						};
 						if (ability.limit != -1) {
