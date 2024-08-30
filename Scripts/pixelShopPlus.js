@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pixel Shop+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes it easier to create new custom shops for Idle Pixel
 // @author       Dounford
 // @license      MIT
