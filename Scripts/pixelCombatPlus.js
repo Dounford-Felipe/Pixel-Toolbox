@@ -4,7 +4,7 @@
 // @version      1.0.1
 // @description  Makes it easier to create new custom enemies for Idle Pixel
 // @author       Dounford
-// @license      All Rights Reserved
+// @license      MIT
 // @match        *://idle-pixel.com/login/play*
 // @grant        none
 // ==/UserScript==
