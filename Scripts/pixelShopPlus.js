@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pixel Shop+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Makes it easier to create new custom shops for Idle Pixel
 // @author       Dounford
 // @license      MIT
@@ -45,31 +45,66 @@ if (!document.getElementById('shopButtons')) {
 		
 		//Creates 
 		newModals: function () {
-			let customShopModalDiv = `<div style="width: 100%; height: 100%; position: absolute;top:0px; display: none;" id="customShopModalParent">
-				<div style="background-color: black;opacity: 0.7;width: 100%;height: 100%;position: absolute;" onclick="document.getElementById('customShopModalParent').style.display='none'"></div>
-				<div class="modal-content" id="customShopModal" style="z-index: 11;position: sticky;right: 0px;left: 0px;margin-right: auto;margin-left: auto;width: 35%;border-radius: 5px;top: 100px;">
-					<div class="modal-header">
-						<h5 class="modal-title text-secondary">Purchase Item</h5>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="document.getElementById('customShopModalParent').style.display='none'"></button>
-						<input type="hidden" id="customShopModalShop">
-						<input type="hidden" id="customShopModalItem">
-					</div>
-					<div class="modal-body">
-						<span>
-						  <center>
-							<img id="customShopModalImage" style="height:100px" src="" title="balance">
-						  </center>
-						  <br>
-						  <br>
-						</span>
-						<div class="center" id="customShopModalText"></div>
-					</div>
-					<div class="modal-footer">
-					  <button onclick="document.getElementById('customShopModalParent').style.display='none'"><span class="font-pixel hover">Cancel</span></button>
-					  <button id="customShopModalBuy" class="background-primary" style=""><span class="font-pixel hover">Purchase</span></button>
-					</div>
+			let style = document.createElement('style');
+			style.innerHTML = `
+			dialog::backdrop {
+				background-color: rgba(0, 0, 0, 0.855);
+			}
+			.dounfordModal {
+				padding: 0;
+				width: 500px;
+    			background-color: #e5e5e5;
+				border-radius: 0.5rem;
+			}
+			.dounfordModalHeader {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 1rem;
+				border-bottom: 1px solid #ccc;
+			}
+			.dounfordModalBody {
+				padding: 1rem;
+			}
+			.dounfordModalFooter {
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
+				padding: 0.75rem;
+				border-top: 1px solid #ccc;
+			}
+			.dounfordModalFooter > * {
+				margin: 0.25rem;
+			}
+			`;
+			document.head.appendChild(style);
+			let customShopModalDiv = `<dialog id="customShopModal" onclick="event.target.offsetWidth==this && this.close()" class="dounfordModal">
+				<div class="dounfordModalHeader">
+					<h5 class="modal-title text-secondary">Purchace Item</h5>
+					<button type="button" class="btn-close" onclick="document.getElementById('customShopModal').close()" style="padding: 0.5rem;"></button>
+					<input type="hidden" id="customShopModalShop">
+					<input type="hidden" id="customShopModalItem">
 				</div>
-			</div>`
+				<div class="dounfordModalBody">
+					<span>
+						<center>
+							<img id="customShopModalImage" src="" title="Custom Shop Item" style="height:100px">
+						</center>
+						<br>
+						<br>
+					</span>
+					<div class="center" id="customShopModalText">Purchase this item?</div>
+				</div>
+
+				<div class="dounfordModalFooter">
+					<button onclick="document.getElementById('customShopModal').close()">
+						<span class="font-pixel hover">Cancel</span>
+					</button>
+					<button id="customShopModalBuy" class="background-primary">
+						<span class="font-pixel hover">Purchase</span>
+					</button>
+				</div>
+			</dialog>`
 			document.getElementById('content').insertAdjacentHTML('beforeend', customShopModalDiv);
 			document.getElementById('customShopModalBuy').addEventListener('click', PixelShopPlus.buyItem);
 		},
@@ -213,13 +248,13 @@ if (!document.getElementById('shopButtons')) {
 		
 		//Open Buy Confirm
 		openBuyModal: function(shop,item) {
-			if (PixelShopPlus.items[shop][item].bought == false) {
+			if (PixelShopPlus.items[shop][item]) {
 				document.getElementById('customShopModalShop').value = shop;
 				document.getElementById('customShopModalItem').value = item;
 				document.getElementById('customShopModalImage').src = PixelShopPlus.items[shop][item].imageUrl;
 				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].buyText || "Buy?";
 				document.getElementById('customShopModalBuy').style.display='';
-				document.getElementById('customShopModalParent').style.display='';
+				document.getElementById('customShopModal').style.display='';
 			}
 		},
 		
