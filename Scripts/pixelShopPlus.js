@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pixel Shop+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Makes it easier to create new custom shops for Idle Pixel
 // @author       Dounford
 // @license      MIT
@@ -27,7 +27,6 @@
 	tooltipText:"<span class='color-primary'>Blue Cat</span><br /><br />This cute cat wants to be your friend",
 	buyText:"Adopt this cat to be your friend",
 	boughtText:"Charlie will forever love you",
-	bought:false,
 	callback: function(){IdlePixelPlus.plugins.test.bought(pirate)}
 }]*/
 //PixelShopPlus.newItems('fish',newItemFormat)
@@ -169,10 +168,13 @@ if (!document.getElementById('shopButtons')) {
 			if (typeof coin == 'string') {
 				let newCoinImage = document.createElement('img');
 				newCoinImage.src = PixelShopPlus.coins[coin].image
-				newCoinImage.className = "w20"
+				newCoinImage.className = "w30"
 				let newCoinValue = document.createElement('span');
 				newCoinValue.setAttribute('coin-value', coin)
 				newCoinValue.innerText = PixelShopPlus.coins[coin].value.toLocaleString("en-US")
+				newCoinValue.style.marginLeft = "5px"
+				newCoinValue.style.fontSize = "1.3rem"
+				newCoinValue.style.verticalAlign = "middle"
 				newShopPanel.appendChild(newCoinImage);
 				newShopPanel.appendChild(newCoinValue);
 			}
@@ -241,7 +243,7 @@ if (!document.getElementById('shopButtons')) {
 				document.getElementById('customShopModalBuy').style.display="none";
 				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].boughtText || "Bought!";
 				if(typeof PixelShopPlus.items[shop][item].callback == "function") {
-					PixelShopPlus.items[shop][item].callback()
+					PixelShopPlus.items[shop][item].callback(item)
 				}
 			} else {
 				document.getElementById('customShopModalBuy').style.display='none';
