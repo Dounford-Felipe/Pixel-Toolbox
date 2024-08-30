@@ -190,10 +190,10 @@ if (!document.getElementById('shopButtons')) {
 			items.forEach(function(item) {
 				PixelShopPlus.items[shop][item.name] = item;
 				let newShopItem = `<div id="shop-${item.name}" onclick="PixelShopPlus.openBuyModal('${shop}','${item.name}')" class="game-shop-box hover shadow" data-tooltip="shop-${item.name}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true" title="" data-bs-original-title="${item.tooltipText}" style="margin-right: 5px;">
-					<div class="center mt-1">
+					<div class="center mt-2">
 						<img src="${item.imageUrl}" title="${item.name}" style="height: 50px;">
 					</div>
-					<div class="center mt-1">
+					<div class="center mt-2">
 						<img src="${PixelShopPlus.coins[item.coin].image}" title="${item.coin}" class="w20">
 						<span id="${item.name}-shop-cost">${format_number(item.price)}</span>
 					</div>
