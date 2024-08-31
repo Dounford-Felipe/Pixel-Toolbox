@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         Pixel Shop+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Makes it easier to create new custom shops for Idle Pixel
 // @author       Dounford
 // @license      MIT
 // @match        *://idle-pixel.com/login/play*
-// @require      https://greasyfork.org/scripts/506089-ip-dounford-scripts-styles/code/IP%20Dounford%20Scripts%20Styles.js
 // @grant        none
 // ==/UserScript==
 
@@ -35,6 +34,11 @@
 if (!document.getElementById('shopButtons')) {
 (function PixelShopPlus() {
     'use strict';
+
+	const styleScript = document.createElement('script');
+	styleScript.src = 'https://raw.githubusercontent.com/Dounford-Felipe/Pixel-Toolbox/main/Scripts/styles.js';
+	document.head.appendChild(styleScript);
+
 	const PixelShopPlus = {
 		shops: ['vanilla'],
 		coins: {},
