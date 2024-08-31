@@ -1,10 +1,18 @@
-const dounfordStyleVersion = "1.0.0"
+// ==UserScript==
+// @name         IP Dounford Scripts Styles
+// @version      1.0.1
+// @description  Centralize IP Dounford Styles
+// @author       Dounford
+// @license      MIT
+// @match        *://idle-pixel.com/login/play*
+// @grant        none
+// ==/UserScript==
 
 (function() {
 	'use strict';
 	function isNewerVersion () {
 		const oldParts = document.getElementById('dounfordStyles').getAttribute('version').split('.')
-		const newParts = dounfordStyleVersion.split('.')
+		const newParts = GM_info.script.version.split('.')
 		for (let i = 0; i < newParts.length; i++) {
 			const a = ~~newParts[i]
 			const b = ~~oldParts[i]
@@ -17,7 +25,7 @@ const dounfordStyleVersion = "1.0.0"
 	(function addStyles() {
 		let style = document.createElement('style');
 		style.id = "dounfordStyles"
-		style.setAttribute('version', dounfordStyleVersion)
+		style.setAttribute('version', GM_info.script.version)
 		const styleHTML = `
 		/* Modal Style */
 		dialog::backdrop {
@@ -97,7 +105,7 @@ const dounfordStyleVersion = "1.0.0"
 		if (document.getElementById('dounfordStyles')) {
 			if (!isNewerVersion()) return
 			document.getElementById('dounfordStyles').innerHTML = styleHTML
-			document.getElementById('dounfordStyles').setAttribute('version', dounfordStyleVersion)
+			document.getElementById('dounfordStyles').setAttribute('version', GM_info.script.version)
 		} else {
 			style.innerHTML = styleHTML
 			document.head.appendChild(style);

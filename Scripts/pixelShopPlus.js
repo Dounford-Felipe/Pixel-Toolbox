@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pixel Shop+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Makes it easier to create new custom shops for Idle Pixel
 // @author       Dounford
 // @license      MIT
@@ -34,10 +34,6 @@
 if (!document.getElementById('shopButtons')) {
 (function PixelShopPlus() {
     'use strict';
-
-	const styleScript = document.createElement('script');
-	styleScript.src = 'https://raw.githubusercontent.com/Dounford-Felipe/Pixel-Toolbox/main/Scripts/styles.js';
-	document.head.appendChild(styleScript);
 
 	const PixelShopPlus = {
 		shops: ['vanilla'],
