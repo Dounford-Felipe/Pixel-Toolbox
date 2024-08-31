@@ -6,6 +6,7 @@
 // @author       Dounford
 // @license      MIT
 // @match        *://idle-pixel.com/login/play*
+// @require      https://greasyfork.org/scripts/506089-ip-dounford-scripts-styles/code/IP%20Dounford%20Scripts%20Styles.js
 // @grant        none
 // ==/UserScript==
 
@@ -45,39 +46,6 @@ if (!document.getElementById('shopButtons')) {
 		
 		//Creates 
 		newModals: function () {
-			let style = document.createElement('style');
-			style.innerHTML = `
-			dialog::backdrop {
-				background-color: rgba(0, 0, 0, 0.855);
-			}
-			.dounfordModal {
-				padding: 0;
-				width: 500px;
-    			background-color: #e5e5e5;
-				border-radius: 0.5rem;
-			}
-			.dounfordModalHeader {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				padding: 1rem;
-				border-bottom: 1px solid #ccc;
-			}
-			.dounfordModalBody {
-				padding: 1rem;
-			}
-			.dounfordModalFooter {
-				display: flex;
-				align-items: center;
-				justify-content: flex-end;
-				padding: 0.75rem;
-				border-top: 1px solid #ccc;
-			}
-			.dounfordModalFooter > * {
-				margin: 0.25rem;
-			}
-			`;
-			document.head.appendChild(style);
 			let customShopModalDiv = `<dialog id="customShopModal" onclick="event.target.offsetWidth==this && this.close()" class="dounfordModal">
 				<div class="dounfordModalHeader">
 					<h5 class="modal-title text-secondary">Purchace Item</h5>
