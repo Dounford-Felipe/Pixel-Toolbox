@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         IP Dounford Scripts Styles
-// @version      1.0.0
+// @version      1.0.1
 // @description  Centralize IP Dounford Styles
 // @author       Dounford
 // @license      MIT
@@ -26,15 +26,20 @@
 		let style = document.createElement('style');
 		style.id = "dounfordStyles"
 		style.setAttribute('version', GM_info.script.version)
-		styleHTML = `
+		const styleHTML = `
+		/* Modal Style */
 		dialog::backdrop {
 			background-color: rgba(0, 0, 0, 0.855);
 		}
 		.dounfordModal {
 			padding: 0;
-			width: 500px;
+			width: 600px;
 			background-color: #e5e5e5;
 			border-radius: 0.5rem;
+			overflow: hidden;
+		}
+		.dounfordModal label {
+			margin-left: 5px;
 		}
 		.dounfordModalHeader {
 			display: flex;
@@ -56,6 +61,45 @@
 		}
 		.dounfordModalFooter > * {
 			margin: 0.25rem;
+		}
+		
+		/* Blocked User Modal */
+		.blockedUser {
+			display: flex;
+			justify-content: space-between;
+			padding: 10px;
+			border-radius: 10px;
+			font-weight: bold;
+			align-items: center;
+		}
+
+		.blockedUser:hover {
+			background-color: aliceblue;
+		}
+			
+		/* Tooltips*/
+		[dounfordTooltip] {
+			position: relative;
+			border-bottom: 1px dashed #000;
+		}
+
+		[dounfordTooltip]::after {
+			position: absolute;
+			z-index: 10;
+			opacity: 0;
+			pointer-events: none;
+			content: attr(dounfordTooltip);
+			left: 0;
+			top: calc(100% + 10px);
+			border-radius: 3px;
+			box-shadow: 0 0 5px 2px rgba(100, 100, 100, 0.6);
+			background-color: white;
+			padding: 5px;
+			width: 150px;
+		}
+
+		[dounfordTooltip]:hover::after {
+			opacity: 1;
 		}`;
 
 		if (document.getElementById('dounfordStyles')) {
