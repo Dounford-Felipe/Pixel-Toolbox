@@ -46,7 +46,7 @@ if (!document.getElementById('shopButtons')) {
 		
 		//Creates 
 		newModals: function () {
-			let customShopModalDiv = `<dialog id="customShopModal" onclick="event.target.offsetWidth==this && this.close()" class="dounfordModal">
+			let customShopModalDiv = `<dialog id="customShopModal" onclick="event.target==this && this.close()" class="dounfordModal">
 				<div class="dounfordModalHeader">
 					<h5 class="modal-title text-secondary">Purchace Item</h5>
 					<button type="button" class="btn-close" onclick="document.getElementById('customShopModal').close()" style="padding: 0.5rem;"></button>
@@ -222,7 +222,7 @@ if (!document.getElementById('shopButtons')) {
 				document.getElementById('customShopModalImage').src = PixelShopPlus.items[shop][item].imageUrl;
 				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].buyText || "Buy?";
 				document.getElementById('customShopModalBuy').style.display='';
-				document.getElementById('customShopModal').style.display='';
+				document.getElementById('customShopModal').showModal();
 			}
 		},
 		
@@ -234,7 +234,7 @@ if (!document.getElementById('shopButtons')) {
 			let coin = PixelShopPlus.items[shop][item].coin;
 			if (PixelShopPlus.coins[coin].value >= price) {
 				if (typeof PixelShopPlus.items[shop].beforeFunction == "function") {
-					success = await PixelShopPlus.items[shop].beforeFunction(item)
+					const success = await PixelShopPlus.items[shop].beforeFunction(item)
 					if (!success) {
 						document.getElementById('customShopModalBuy').style.display='none';
 						document.getElementById('customShopModalText').innerText = "You are unable to buy this, sorry.";

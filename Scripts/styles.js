@@ -27,6 +27,11 @@
 		style.id = "dounfordStyles"
 		style.setAttribute('version', GM_info.script.version)
 		const styleHTML = `
+		/* Hover */
+		.dounfordHover:hover {
+			cursor: pointer;
+    		background-color: rgb(225 225 225);
+		}
 		/* Modal Style */
 		dialog::backdrop {
 			background-color: rgba(0, 0, 0, 0.855);
@@ -36,7 +41,7 @@
 			width: 600px;
 			background-color: #e5e5e5;
 			border-radius: 0.5rem;
-			overflow: hidden;
+			overflow: visible;
 		}
 		.dounfordModal label {
 			margin-left: 5px;
@@ -93,14 +98,45 @@
 			top: calc(100% + 10px);
 			border-radius: 3px;
 			box-shadow: 0 0 5px 2px rgba(100, 100, 100, 0.6);
-			background-color: white;
+			background-color: black;
+			color: white;
 			padding: 5px;
-			width: 150px;
+			width: 200px;
 		}
 
 		[dounfordTooltip]:hover::after {
 			opacity: 1;
-		}`;
+		}
+			
+		/* PVP Tab */
+		.dounfordPVPGrid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: 1fr 1fr;
+		    color: white;
+		}
+		.dounfordPVPTitles {
+			color: black;
+			display: inline-block;
+			padding: 10px;
+			border: 2px solid gold;
+			background-color: white;
+			border-radius: 5px;
+			margin: 5px;
+			font-size: 1.2rem;
+		}
+		.dounfordPVPTitles {
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+			border: 2px solid gold;
+			border-radius: 5px;
+			padding: 10px;
+			font-size: 1.2rem;
+			background-color: white;
+			color: black;
+		}
+		`;
 
 		if (document.getElementById('dounfordStyles')) {
 			if (!isNewerVersion()) return
