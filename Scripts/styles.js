@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         IP Dounford Scripts Styles
-// @version      1.0.1
+// @version      1.0.2
 // @description  Centralize IP Dounford Styles
 // @author       Dounford
 // @license      MIT
