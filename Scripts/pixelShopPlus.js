@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pixel Shop+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Makes it easier to create new custom shops for Idle Pixel
 // @author       Dounford
 // @license      MIT
@@ -233,6 +233,7 @@ if (!document.getElementById('shopButtons')) {
 			let price = PixelShopPlus.items[shop][item].price
 			let coin = PixelShopPlus.items[shop][item].coin;
 			if (PixelShopPlus.coins[coin].value >= price) {
+				document.getElementById('customShopModalBuy').style.display="none";
 				if (typeof PixelShopPlus.items[shop].beforeFunction == "function") {
 					const success = await PixelShopPlus.items[shop].beforeFunction(item)
 					if (!success) {
@@ -243,7 +244,6 @@ if (!document.getElementById('shopButtons')) {
 				}
 				PixelShopPlus.coinDecrease(coin,price);
 				document.getElementById('shop-' + item).style.display = "none";
-				document.getElementById('customShopModalBuy').style.display="none";
 				document.getElementById('customShopModalText').innerText = PixelShopPlus.items[shop][item].boughtText || "Bought!";
 				if(typeof PixelShopPlus.items[shop][item].callback == "function") {
 					PixelShopPlus.items[shop][item].callback(item)

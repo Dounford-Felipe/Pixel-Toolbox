@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         IP Dounford Scripts Styles
-// @version      1.0.2
+// @version      1.0.3
 // @description  Centralize IP Dounford Styles
 // @author       Dounford
 // @license      MIT
@@ -112,8 +112,10 @@
 		.dounfordPVPGrid {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			grid-template-rows: 1fr 1fr;
+			grid-template-rows: auto auto;
 		    color: white;
+			max-height: 1223px;
+			text-align:center;
 		}
 		.dounfordPVPTitles {
 			color: black;
