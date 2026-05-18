@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pixel Combat+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.1
 // @description  Makes it easier to create new custom enemies for Idle Pixel
 // @author       Dounford
 // @license      MIT
@@ -84,19 +84,25 @@ if (!document.getElementById('panel-customCombat')) {
 			speed:3,
 			defence:5,
 			multiPhase: false,
-			nextPhase:'',
+			nextPhase:null, //pointer to next phase object
 			arrowImunity:false,
 			magicImunity:false,
-			needsLight:false,
-			weakToFire:false,
-			weakToIce:false,
+			meleeImunity:false,
+			invulnerable: false, //imune to everything but reflect
+			needsLight:false, //requires lantern or ring of light
+			weakToFire:false, //fire spell and fire arrow
+			weakToIce:false, //ice arrow
+			weakToAxe:false, //battle axe
 			poisoned: false,
-			ghost: false,
-			fish: false,
-			defender: false,
-			lootTable: "",
-			lootFunction: "",
-			winFunction: "",
+			ghost: false, //weak to scythe, double scythe and reaper+ fire spell
+			fish: false, //weak to trident and long trident and reduces base speed without flippers
+			defender: false, //damages every time it's hit
+			defenderDamage: 1, //amount of damage per hit
+			hasSpikes: false, //requires long trident or spear to not take damage (20% of max health per hit if not equipped)
+			abilities = [],
+			lootTable: null,
+			lootFunction: null,
+			winFunction: null,
 		},
 		//Hero Stats
 		hero: {
@@ -106,14 +112,15 @@ if (!document.getElementById('panel-customCombat')) {
 			isReflecting:false,
 			poisoned: false
 		},
-		//Spells Cooldown
-		healCooldown: 0,
-		fireCooldown: 0,
-		reflectCooldown: 0,
-		invisibilityCooldown: 0,
-		heroIsInvisible: 0,
-		enemyIsInvisible: 0,
-		enemyIsCharging: 0,
+		cooldowns: {
+			heal: 0,
+			fire: 0,
+			reflect: 0,
+			invisibility: 0,
+			heroIsInvisible: 0,
+			enemyIsInvisible: 0,
+			enemyIsCharging: 0
+		},
 		
 		testFight: function() {
 			PixelCombatPlus.startFight(defaultEnemy)
@@ -338,7 +345,7 @@ if (!document.getElementById('panel-customCombat')) {
 		
 		//Cooldown function
 		cooldown: function(variable,time,id,defaultText) {
-			PixelCombatPlus[variable] = time;
+			PixelCombatPlus.cooldowns[variable] = time;
 			if (typeof id == 'string') {
 				document.getElementById(id).innerHTML = time;
 				document.getElementById(id).parentNode.style.display = "";
@@ -356,7 +363,7 @@ if (!document.getElementById('panel-customCombat')) {
 			};
 		},
 		
-		//Cooldown function
+		//Enemie Cooldown function
 		cooldownAbility: function(index,time) {
 			if (PixelCombatPlus.fight == false) {PixelCombatPlus.enemy.abilities = []};
 			if (PixelCombatPlus.enemy.abilities[index] == undefined) {return};
@@ -370,53 +377,54 @@ if (!document.getElementById('panel-customCombat')) {
 		
 		//Spell Casting Function
 		spell: function(spellName) {
-			if (PixelCombatPlus[spellName+'Cooldown'] == 0) {
-				switch (spellName) {
-					case "heal":
-						if (PixelCombatPlus.hero.mana >= 2) {
-							PixelCombatPlus.hero.mana -= 2;
-							PixelCombatPlus.hero.hp += 3;
-							PixelCombatPlus.hero.hp = Math.min(PixelCombatPlus.hero.hp,var_max_hp);
-							PixelCombatPlus.updateStatsBars();
-							PixelCombatPlus.addHitSplat("3", 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Hero');
-							PixelCombatPlus.cooldown('healCooldown',5,'custom-fighting-spell-label-heal','Heal <span class="color-grey" style="color: rgb(128, 128, 128);">(Q)</span>');
-						}
-					break;
-					case "fire":
-						if (PixelCombatPlus.hero.mana >= 3) {
-							PixelCombatPlus.hero.mana -= 3;
-							let fireDamage = Math.floor(Math.random() * 6) + parseInt(var_magic_bonus);
-							if (PixelCombatPlus.enemy.weakToFire == true) {
-								fireDamage *= 2
-							};
-							if (PixelCombatPlus.enemy.magicImunity == false) {
-								PixelCombatPlus.enemy.hp -= fireDamage;
-								PixelCombatPlus.addHitSplat(fireDamage, 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Enemy');
-							} else {
-								PixelCombatPlus.addHitSplat('IMMUNE', 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Enemy');
-							};
-							PixelCombatPlus.updateStatsBars();
-							PixelCombatPlus.cooldown('fireCooldown',5,'custom-fighting-spell-label-fire','Fire <span class="color-grey" style="color: rgb(128, 128, 128);">(W)</span>');
-						}
-					break;
-					case "reflect":
-						if (PixelCombatPlus.hero.mana >= 1 && PixelCombatPlus.hero.isReflecting == false) {
-							PixelCombatPlus.hero.mana -= 1;
-							PixelCombatPlus.hero.isReflecting = true;
-							PixelCombatPlus.updateStatsBars();
-							PixelCombatPlus.cooldown('reflectCooldown',30,'custom-fighting-spell-label-reflect','Reflect <span class="color-grey" style="color: rgb(128, 128, 128);">(E)</span>');
-						}
-					break;
-					case "invisibility":
-						if (PixelCombatPlus.hero.mana >= 2) {
-							PixelCombatPlus.hero.mana -= 2;
-							PixelCombatPlus.updateStatsBars();
-							PixelCombatPlus.cooldown('heroIsInvisible',4);
-							PixelCombatPlus.cooldown('invisibilityCooldown',30,'custom-fighting-spell-label-invisibility','Invisibility <span class="color-grey" style="color: rgb(128, 128, 128);">(R)</span>');
-						}
-					break;
-				};
+			if (!PixelCombatPlus.cooldowns.hasOwnProperty(spellName) || PixelCombatPlus.cooldowns[spellName] !== 0) {
+				return;
 			}
+			switch (spellName) {
+				case "heal":
+					if (PixelCombatPlus.hero.mana >= 2) {
+						PixelCombatPlus.hero.mana -= 2;
+						PixelCombatPlus.hero.hp += 3;
+						PixelCombatPlus.hero.hp = Math.min(PixelCombatPlus.hero.hp,var_max_hp);
+						PixelCombatPlus.updateStatsBars();
+						PixelCombatPlus.addHitSplat("3", 'images/heal_spell.png', 'lime', 'rgba(0,255,0,0.4)', 'blue', 'Hero');
+						PixelCombatPlus.cooldown('healCooldown',5,'custom-fighting-spell-label-heal','Heal <span class="color-grey" style="color: rgb(128, 128, 128);">(Q)</span>');
+					}
+				break;
+				case "fire":
+					if (PixelCombatPlus.hero.mana >= 3) {
+						PixelCombatPlus.hero.mana -= 3;
+						let fireDamage = Math.floor(Math.random() * 6) + parseInt(var_magic_bonus);
+						if (PixelCombatPlus.enemy.weakToFire == true) {
+							fireDamage *= 2
+						};
+						if (PixelCombatPlus.enemy.magicImunity == false) {
+							PixelCombatPlus.enemy.hp -= fireDamage;
+							PixelCombatPlus.addHitSplat(fireDamage, 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Enemy');
+						} else {
+							PixelCombatPlus.addHitSplat('IMMUNE', 'images/fire_icon.png', 'white', 'rgba(255,0,0,0.4)', 'blue', 'Enemy');
+						};
+						PixelCombatPlus.updateStatsBars();
+						PixelCombatPlus.cooldown('fireCooldown',5,'custom-fighting-spell-label-fire','Fire <span class="color-grey" style="color: rgb(128, 128, 128);">(W)</span>');
+					}
+				break;
+				case "reflect":
+					if (PixelCombatPlus.hero.mana >= 1 && PixelCombatPlus.hero.isReflecting == false) {
+						PixelCombatPlus.hero.mana -= 1;
+						PixelCombatPlus.hero.isReflecting = true;
+						PixelCombatPlus.updateStatsBars();
+						PixelCombatPlus.cooldown('reflectCooldown',30,'custom-fighting-spell-label-reflect','Reflect <span class="color-grey" style="color: rgb(128, 128, 128);">(E)</span>');
+					}
+				break;
+				case "invisibility":
+					if (PixelCombatPlus.hero.mana >= 2) {
+						PixelCombatPlus.hero.mana -= 2;
+						PixelCombatPlus.updateStatsBars();
+						PixelCombatPlus.cooldown('heroIsInvisible',4);
+						PixelCombatPlus.cooldown('invisibilityCooldown',30,'custom-fighting-spell-label-invisibility','Invisibility <span class="color-grey" style="color: rgb(128, 128, 128);">(R)</span>');
+					}
+				break;
+			};
 		},
 		
 		poison: function(receiver,poisonDamage) {
