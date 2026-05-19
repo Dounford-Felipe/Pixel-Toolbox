@@ -455,11 +455,14 @@ if (!document.getElementById('panel-customCombat')) {
 			class AbilityPlus {
 				constructor(type, initialCooldown, abilityCooldown, needsCharging, value, chance, uses, images) {
 					//value = [min, max]
-					//images = [charging]
+					//images = [charging, hitsplat]
 					this.type = type;
 					this.cooldown = abilityCooldown;
 					this.needsCharging = needsCharging;
 					this.chance = chance;
+					if(Array.isArray(value)) {
+
+					}
 					setTimeout(()=>this.cast(), initialCooldown * 1000);
 				}
 
@@ -479,6 +482,7 @@ if (!document.getElementById('panel-customCombat')) {
 					const randomChance = Math.random();
 					if (ability.chance > randomChance)  {
 						switch (ability.type) {
+							//types = heal, poison, damage, lifeSteal, kamikaze, invisibility, rain, mudRain, reflect, fly, throw, immunity, 
 							case 'heal':
 								let healAmount = Math.floor(Math.random() * (ability.max - ability.min + 1) + ability.min)
 								PixelCombatPlus.enemy.hp += healAmount;
