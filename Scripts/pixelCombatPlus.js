@@ -453,8 +453,18 @@ if (!document.getElementById('panel-customCombat')) {
 
 		t:function(){
 			class AbilityPlus {
-				constructor() {
-					
+				constructor(type, initialCooldown, abilityCooldown, needsCharging, value, chance, uses, images) {
+					//value = [min, max]
+					//images = [charging]
+					this.type = type;
+					this.cooldown = abilityCooldown;
+					this.needsCharging = needsCharging;
+					this.chance = chance;
+					setTimeout(()=>this.cast(), initialCooldown * 1000);
+				}
+
+				cast() {
+
 				}
 			}
 		},
